@@ -1,0 +1,437 @@
+=========================================================================
+|		Using AWS Lambda with the AWS CLI								|
+=========================================================================
+
+Run Commands :
+aws --version
+aws lambda list-functions
+aws lambda get-function --function-name my-function
+
+AWS CLI Commands Reference Doc for AWS Lambda:
+https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/list-functions.html
+
+Invoke Command:
+aws lambda invoke --function-name my-function --cli-binary-format raw-in-base64-out --payload '{ ""key"": ""value"" }' response.json
+
+windows
+aws lambda invoke `
+	--function-name my-function `
+	--cli-binary-format raw-in-base64-out `
+	--payload '{ ""key"": ""value"" }' `
+	response.json
+
+mac
+aws lambda invoke \
+	--function-name my-function \
+	--cli-binary-format raw-in-base64-out \
+	--payload '{ ""key"": ""value"" }' \
+	response.json    
+
+
+=========================================================================
+|	Create Execution Role for AWS Lambda functions with AWS CLI			|
+=========================================================================
+
+Run Command:
+aws iam create-role --role-name lambda-ex --assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+
+Multiline char 
+	    for windows = `
+	    for mac = \
+
+windows:
+aws iam create-role `
+	--role-name lambda-ex `
+	--assume-role-policy-document '{"Version": "2012-10-17","Statement": [{ "Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]}'
+
+-------
+With passing trusted-policy json file:
+
+Run Command:
+aws iam create-role --role-name lambda-ex --assume-role-policy-document file://trust-policy.json
+
+windows:
+aws iam create-role `
+	--role-name lambda-ex `
+	--assume-role-policy-document file://trust-policy.json
+
+-------
+AWSLambdaBasicExecutionRole managed policy:
+
+Run Command:
+aws iam attach-role-policy --role-name lambda-ex --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+windows:
+aws iam attach-role-policy `
+	--role-name lambda-ex `
+	--policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+
+=========================================================================
+|Deploy Node.js Lambda functions with .zip file archives sing AWS CLI	|
+=========================================================================
+
+Run Command:
+mac
+	zip function.zip index.js
+windows
+	Compress-Archive index.js function.zip
+manual
+	go to index.js - right click - Send to -> Compressed (zip) folder
+
+
+AWS Lambda CLI Refence Documentation
+https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/index.html
+
+Get Role:
+aws iam get-role --role-name lambda-ex
+
+> arn:aws:iam::308360398142:role/lambda-ex
+
+Run Command:
+
+windows:
+aws lambda create-function `
+    --function-name my-function2 `
+    --runtime nodejs14.x `
+    --zip-file fileb://function.zip `
+    --handler index.handler `
+    --role arn:aws:iam::308360398142:role/lambda-ex
+
+mac:
+aws lambda create-function \
+    --function-name my-function2 \
+    --runtime nodejs14.x \
+    --zip-file fileb://function.zip \
+    --handler index.handler \
+    --role arn:aws:iam::308360398142:role/lambda-ex
+
+
+
+=======================================================================
+|			AWS Lambda CloudWatch Logs using AWS CLI				|
+=======================================================================
+
+
+AWS Lambda CLI Refence Documentation
+https://awscli.amazonaws.com/v2/documentation/api/latest/reference/logs/index.html
+
+See
+	describe-log-groups
+	get-log-events
+
+Multiline char 
+	    for windows = `
+	    for mac = \
+
+1- Get the log group name:
+aws logs describe-log-groups `
+	--query logGroups[*].logGroupName
+
+2- List the log streams for that log group:
+aws logs describe-log-streams `
+	--log-group-name '/aws/lambda/my-function2' `
+	--query logStreams[*].logStreamName
+
+3- Get the log events for that stream:
+aws logs get-log-events `
+	--log-group-name '/aws/lambda/my-function2' `
+	--log-stream-name '2022/05/10/[$LATEST]311cb43cd18843c2af37a60b2df0c110'
+
+
+
+=============================================================================
+|		Update AWS Lambda Function Code using AWS CLI						|
+=============================================================================
+
+1- Develop lambda code to update one
+2- zip function code
+3- update lambda function with cli
+4- invoke updated lambda function with cli
+
+---
+1- Develop lambda code to update
+    index.js
+
+---
+2- zip function code
+
+Run Command:
+mac
+	zip function.zip index.js
+windows
+	Compress-Archive index.js function.zip
+manuel
+	go to index.js
+        Right click index.js
+		    Send to -> Compressed (zip) folder
+---
+3- update function code
+
+Run Command:
+aws lambda update-function-code --function-name my-function2 --zip-file fileb://function.zip
+
+aws lambda update-function-code `
+    --function-name my-function2 `
+    --zip-file fileb://function.zip
+
+---
+4- invoke updated lambda function with cli
+
+Create event.json file into lecture folder
+event.json
+{
+    "num1" : 3,
+    "num2" : 4
+}
+
+Invoke Lambda Function with passing event.json file
+
+Invoke Command:
+aws lambda invoke --function-name my-function2 --cli-binary-format raw-in-base64-out --payload file://event.json response.json
+
+Multiline char 
+	for windows = `
+	for mac = \
+
+aws lambda invoke `
+	--function-name my-function2 `
+	--cli-binary-format raw-in-base64-out `
+	--payload file://event.json `
+	response.json
+
+
+=============================================================================
+|		Update AWS Lambda Function with Dependencies using AWS CLI			|
+=============================================================================
+
+1- Install required Dependencies into node_modules
+2- zip function code
+3- update lambda function with cli
+4- invoke updated lambda function with cli
+
+---
+1- Install required Dependencies into node_modules
+
+Run Command:
+npm install aws-xray-sdk
+
+---
+2- zip function code
+
+Run Command:
+
+> Zip files: 'index.js', 'package.json', 'package-lock.json' 'node_modules'
+
+manual -- FOLLOW THIS WAY
+	go to index.js and select (Ctrl + click) 'index.js', 'package.json', 'package-lock.json' 'node_modules'
+        Right click index.js
+		    Send to -> Compressed (zip) folder
+---
+3- update function code
+
+Run Command:
+aws lambda update-function-code --function-name my-function2 --zip-file fileb://function.zip
+
+aws lambda update-function-code `
+    --function-name my-function2 `
+    --zip-file fileb://function.zip
+
+---
+4- invoke updated lambda function with cli
+
+Create event.json file into lecture folder
+event.json
+{
+    "num1" : 3,
+    "num2" : 4
+}
+
+Invoke Lambda Function with passing event.json file
+
+Invoke Command:
+aws lambda invoke --function-name my-function2 --cli-binary-format raw-in-base64-out --payload file://event.json response.json
+
+Multiline char 
+	for windows = `
+	for mac = \
+
+aws lambda invoke `
+	--function-name my-function2 `
+	--cli-binary-format raw-in-base64-out `
+	--payload file://event.json `
+	response.json
+
+
+=============================================================================
+|				    AWS Lambda Environment Variables					    |
+=============================================================================
+
+Configuring environment variables with the API
+aws lambda update-function-configuration --function-name my-function3 `
+    --environment "Variables={BUCKET=my-bucket,KEY=file.txt}"
+
+Run Command:
+aws lambda get-function-configuration --function-name my-function3
+
+---
+
+Multiline char 
+    for windows = `
+    for mac = \
+
+
+=============================================================================
+|			    AWS Lambda Clean up Resources								|
+=============================================================================
+
+
+Check Lambda Function details with aws cli	
+aws lambda list-functions --max-items 10
+aws lambda get-function --function-name my-function
+
+Run Command:
+aws lambda delete-function --function-name my-function
+aws lambda delete-function --function-name my-function2
+aws lambda delete-function --function-name my-function3
+
+
+=============================================================================
+|			AWS Lambda Asynchronous Invocation using AWS CLI				|
+=============================================================================
+
+---
+Snyc Invocation:
+
+Invoke Command:
+aws lambda invoke `
+    --function-name calculator `
+    --cli-binary-format raw-in-base64-out `
+    --payload file://event.json `
+    response.json
+
+---
+Asnyc Invocation:
+
+Invoke Command:
+aws lambda invoke `
+  --function-name calculator  `
+  --invocation-type Event `
+  --cli-binary-format raw-in-base64-out `
+  --payload file://event.json `
+  response.json
+
+---
+Multiline char 
+    for windows = `
+    for mac = \
+
+=============================================================================
+|	Microservice Expose https methods with Lambda Function Url				|
+=============================================================================
+---
+
+0- design lambda event
+1- Develop Lambda Function Code
+2- zip function code
+3- create lambda function with cli
+4- create function url config with cli
+5- invoke lambda function with postman
+
+---
+0- design lambda event
+Create event.json file into lecture folder
+
+event.json
+{
+    "a": 2,
+    "b": 5,
+    "op": "+"
+}
+
+POST Request:
+https://6b5fmogruzkt7no6wclnmey6jm0rlwbq.lambda-url.us-east-2.on.aws/
+Response:
+Check logs
+
+---
+1- Develop Lambda Function Code
+
+go to index.js
+exports.handler = async function() {    
+  }
+
+---
+2- zip function code
+
+Run Command:
+mac
+	zip function.zip index.js
+windows
+	Compress-Archive index.js function.zip
+manual
+	go to index.js
+        Right click index.js
+		    Send to -> Compressed (zip) folder
+---
+3- create lambda function with cli
+
+Get Role:
+aws iam get-role --role-name lambda-ex
+
+Get role arn:
+"Arn": "arn:aws:iam::308360398142:role/lambda-ex"
+
+Run Command:
+aws lambda create-function `
+    --function-name calculator `
+    --runtime nodejs14.x `
+    --zip-file fileb://function.zip `
+    --handler index.handler `
+    --role arn:aws:iam::308360398142:role/lambda-ex
+
+---
+4- Create Function url config with cli			
+
+Run Command:
+aws lambda create-function-url-config `
+    --function-name calculator `
+    --auth-type NONE
+
+Response:
+{
+    "FunctionUrl": "https://sj4mycau3chm3lgw6qetc5youa0qdkfo.lambda-url.us-east-2.on.aws/",
+    "FunctionArn": "arn:aws:lambda:us-east-2:308360398142:function:calculator",
+    "AuthType": "NONE",
+    "CreationTime": "2022-05-23T12:56:21.663701Z"
+}
+
+---
+4- invoke lambda function with postman
+
+POSTMAN
+Header content -  -H 'content-type: application/json' \
+payload
+    body -raw - json
+
+    {
+    "a": 2,
+    "b": 5,
+    "op": "+"
+    }
+
+send request
+POST
+https://6b5fmogruzkt7no6wclnmey6jm0rlwbq.lambda-url.us-east-2.on.aws/
+Response:
+{
+    "Message": "Forbidden"
+}
+
+GRANT Permission:
+grants lambda:invokeFunctionUrl permissions
+
+---
+Multiline char 
+    for windows = `
+    for mac = \
