@@ -1,0 +1,2 @@
+> generate zip file with files and folders: 'node_modules' 'index' 'packge-lock and json' 'ddbClient'
+> open lambda console and update your lambda function with the zip file

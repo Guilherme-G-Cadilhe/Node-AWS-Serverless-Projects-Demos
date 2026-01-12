@@ -1,5 +1,5 @@
 import { CreateTableCommand } from "@aws-sdk/client-dynamodb";
-import { ddbClient } from "./ddbClient.js";
+import { ddbClient } from "../ddbClient.js";
 
 export const params = {
   AttributeDefinitions: [
