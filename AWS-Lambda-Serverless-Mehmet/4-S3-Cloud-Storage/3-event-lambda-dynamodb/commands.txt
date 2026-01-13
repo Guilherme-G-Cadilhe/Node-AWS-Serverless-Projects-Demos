@@ -1,0 +1,26 @@
+Hands-on Lab: Develop Lambda Function for async invocation from Amazon S3
+---
+Develop Lambda Function:
+we will have 2 interactions
+    - get bucket detail from S3
+    - write dynamodb table
+
+Zip files: 'all .js files' 'package.json and lock', 'node_modules'
+Upload to Lambda via AWS console
+
+
+=============================================================================
+|             AWS Lambda Destination to SQS - DLQ Case                  |
+=============================================================================
+---
+Async Invoke with CLI :
+
+aws lambda invoke \
+  --function-name my-function  \
+      --invocation-type Event \
+          --cli-binary-format raw-in-base64-out \
+              --payload '{ "key": "value" }' response.json
+
+---
+RUN Command:
+aws lambda invoke --function-name asyc-destination-func --invocation-type Event response.json

@@ -1,0 +1,20 @@
+=============================================================================
+|             AWS Lambda Destination to SQS - DLQ Case                  |
+=============================================================================
+---
+Async Invoke with CLI :
+
+> Create Lambda
+> Create SQS
+> Acess lambda on console
+> Go to Lambda "destination" and create to send to SQS Queue
+
+aws lambda invoke \
+  --function-name asyc-destination-func  \
+      --invocation-type Event \
+          --cli-binary-format raw-in-base64-out \
+              --payload '{ "key": "value" }' response.json
+
+---
+RUN Command:
+aws lambda invoke --function-name asyc-destination-func --invocation-type Event response.json
